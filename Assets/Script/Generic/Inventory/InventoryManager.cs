@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;   
 using UnityEngine;
+using System.Linq;
 //모든 아이템의 기본 인터페이스 interface 클래스
 //메소드, 이벤트, 인덱서, 프로퍼티
 //모든이 무조건 public으로 선언된다.
@@ -13,6 +14,24 @@ public interface IItem //아이템은 기본적으로 이름, ID, Use메소드를 가지고있음
     string Name { get; }
     int ID { get; }
     void Use();
+}
+
+//CraftingMaterial 클래스 추가
+public class CraftingMaterial : IItem
+{
+    public string Name { get; private set; }
+    public int ID { get; private set; }
+
+    public CraftingMaterial(string name, int id)
+    {
+        Name = name;
+        ID = id;
+    }
+
+    public void Use()
+    {
+        Debug.Log($"This is a crafting material : {Name}");
+    }
 }
 
 //구체적인 아이템 클래스 (Weapon)
@@ -98,6 +117,31 @@ public class Inventory<T> where T : IItem
             Debug.Log($"Item: {item.Name} , ID : {item.ID}");
         }
     }
+
+    public void RemoveItems(int itemId, int amount)
+    {
+        int removed = 0;
+        for(int i = items.Count - 1; i >= 0; i--)
+        {
+            if (items[i].ID == itemId)
+            {
+                items.RemoveAt(i);
+                removed++;
+                if (removed >= amount)
+                    break;
+            }
+        }
+    }
+    
+    public bool HasEnough(int itemId, int amount)           //아이템이 충분한지 검사
+    {
+        return GetItemCount(itemId) >= amount;
+    }
+
+    public int GetItemCount(int itemId)                     //아이템 카운트 함수
+    {
+        return items.Count(item => item.ID == itemId);
+    }
 }
 
 
@@ -115,8 +159,22 @@ public class InventoryManager : MonoBehaviour
         playerInventory.AddItem(new Weapon("Sword", 1, 10));
         playerInventory.AddItem(new Weapon("Small Potion", 2, 20));
 
+        playerInventory.AddItem(new CraftingMaterial("Iron Ingot", 101));           //ID 101 : 철 주괴
+        playerInventory.AddItem(new CraftingMaterial("Iron Ingot", 101));           //ID 101 : 철 주괴
+        playerInventory.AddItem(new CraftingMaterial("Wood", 102));                 //ID 102 : 나무
+
+        playerInventory.AddItem(new CraftingMaterial("Herb", 201));                 //ID 201 : 약초
+        playerInventory.AddItem(new CraftingMaterial("Herb", 201));                 //ID 201 : 약초
+        playerInventory.AddItem(new CraftingMaterial("Water", 202));                //ID 202 : 물
     }
 
+    //인벤토리 접근자 메서드 추가
+    public Inventory<IItem> GetInventory()
+    {
+
+        return playerInventory; 
+
+    }
     private void Update()
     {
         if(Input.GetKeyDown(KeyCode.Space))
