@@ -29,6 +29,7 @@ namespace MyGame.CraftingSystem
 
         public void AddRequiredMaterial(int itemId, int amount)
         {
+            
             if (requiredMaterials.ContainsKey(itemId))
             {
                 requiredMaterials[itemId] += amount;
